@@ -1,0 +1,12 @@
+实现一个web后台系统，功能如下：
+1. 用户登录
+2. 用户管理
+3. 角色管理
+4. 权限管理
+5. 日志管理
+
+架构设计
+1. 前端使用javascript, react, mui, vitejs框架, 代码放在web目录
+2. 后端使用go, gin, gorm框架, mvc架构，代码放在api目录
+3. 数据库mysql, 连接串: rayuser:123456@tcp(192.168.0.107:3306)/jstoremini?charset=utf8&parseTime=true
+4. 登录使用jwt等技术
