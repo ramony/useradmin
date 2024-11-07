@@ -8,6 +8,7 @@ import (
 	"useradmin/api/config"
 	"useradmin/api/middleware"
 	"useradmin/api/models"
+	"fmt"
 )
 
 // LoginRequest 登录请求结构
@@ -96,7 +97,7 @@ func GetUsers(c *gin.Context) {
 func CreateUser(c *gin.Context) {
 	var req CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{"error": "无效的请求参数"})
+		c.JSON(400, gin.H{"error": "无效的请求参数" + fmt.Sprintf("%s %s", err, req)})
 		return
 	}
 
@@ -145,18 +146,7 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	// 如果更新用户名，检查是否已存在
-	if req.Username != "" && req.Username != user.Username {
-		var count int64
-		config.DB.Model(&models.User{}).Where("username = ?", req.Username).Count(&count)
-		if count > 0 {
-			c.JSON(400, gin.H{"error": "用户名已存在"})
-			return
-		}
-		user.Username = req.Username
-	}
-
-	// 如果更新密码，需要加密
+	// 只更新允许修改的字段
 	if req.Password != "" {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 		if err != nil {
@@ -167,15 +157,19 @@ func UpdateUser(c *gin.Context) {
 	}
 
 	if req.RoleID != 0 {
-		user.RoleID = req.RoleID
+			user.RoleID = req.RoleID
 	}
 
-	if req.Status != 0 {
-		user.Status = req.Status
-	}
+	user.Status = req.Status
 
 	if err := config.DB.Save(&user).Error; err != nil {
 		c.JSON(500, gin.H{"error": "更新用户失败"})
+		return
+	}
+
+	// 重新加载用户信息，包括角色信息
+	if err := config.DB.Preload("Role").First(&user, user.ID).Error; err != nil {
+		c.JSON(500, gin.H{"error": "获取更新后的用户信息失败"})
 		return
 	}
 

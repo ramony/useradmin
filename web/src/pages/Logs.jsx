@@ -134,8 +134,8 @@ const Logs = () => {
           </TableHead>
           <TableBody>
             {Array.isArray(logs) && logs.map((log) => (
-              <TableRow key={log.id}>
-                <TableCell>{log.id}</TableCell>
+              <TableRow key={log.ID}>
+                <TableCell>{log.ID}</TableCell>
                 <TableCell>{log.username}</TableCell>
                 <TableCell>{log.action}</TableCell>
                 <TableCell>{log.resource}</TableCell>

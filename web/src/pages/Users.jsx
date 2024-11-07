@@ -72,7 +72,8 @@ const Users = () => {
         username: user.username,
         password: '',
         roleId: user.role_id,
-        status: user.status
+        status: user.status,
+        id: user.id
       });
     } else {
       setEditUser(null);
@@ -80,7 +81,8 @@ const Users = () => {
         username: '',
         password: '',
         roleId: '',
-        status: 1
+        status: 1,
+        id: null
       });
     }
     setOpen(true);
@@ -115,7 +117,7 @@ const Users = () => {
       }
 
       if (editUser) {
-        await updateUser(editUser.ID, userData);
+        await updateUser(formData.id, userData);
         setMessage({ open: true, type: 'success', text: '更新用户成功' });
       } else {
         await createUser(userData);
@@ -184,8 +186,8 @@ const Users = () => {
           </TableHead>
           <TableBody>
             {Array.isArray(users) && users.map((user) => (
-              <TableRow key={user.ID} hover>
-                <TableCell>{user.ID}</TableCell>
+              <TableRow key={user.id} hover>
+                <TableCell>{user.id}</TableCell>
                 <TableCell>{user.username}</TableCell>
                 <TableCell>{user.role?.name}</TableCell>
                 <TableCell>
@@ -235,6 +237,7 @@ const Users = () => {
             required
             value={formData.username}
             onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+            disabled={!!editUser}
           />
           <TextField
             margin="dense"
@@ -244,6 +247,7 @@ const Users = () => {
             required={!editUser}
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            helperText={editUser ? "不修改请留空" : ""}
           />
           <FormControl fullWidth margin="dense">
             <InputLabel>角色</InputLabel>

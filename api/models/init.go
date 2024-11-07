@@ -8,6 +8,11 @@ import (
 
 // InitData 初始化基础数据
 func InitData(db *gorm.DB) error {
+	// 自动迁移表结构
+	if err := db.AutoMigrate(&Permission{}, &Role{}, &RolePermission{}); err != nil {
+		return err
+	}
+
 	// 创建默认权限
 	for _, perm := range DefaultPermissions {
 		var count int64

@@ -29,6 +29,8 @@ func SetupRoutes(api *gin.RouterGroup) {
 		auth.POST("/roles", middleware.CheckPermission("role:create"), controllers.CreateRole)
 		auth.PUT("/roles/:id", middleware.CheckPermission("role:update"), controllers.UpdateRole)
 		auth.DELETE("/roles/:id", middleware.CheckPermission("role:delete"), controllers.DeleteRole)
+		auth.GET("/roles/:id/permissions", middleware.CheckPermission("role:update"), controllers.GetRolePermissions)
+		auth.PUT("/roles/:id/permissions", middleware.CheckPermission("role:update"), controllers.UpdateRolePermissions)
 
 		// 权限管理
 		auth.GET("/permissions", middleware.CheckPermission("role:list"), controllers.GetPermissions)

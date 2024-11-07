@@ -1,87 +1,159 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Typography,
-  Grid,
-  Paper,
-  CircularProgress,
-} from '@mui/material';
-import { getUsers, getRoles } from '../services/api';
+import { Box, Typography } from '@mui/material';
 
 const Dashboard = () => {
-  const [stats, setStats] = useState({
-    userCount: 0,
-    roleCount: 0,
-    loading: true,
-  });
+  const [time, setTime] = useState(new Date());
+  const [greeting, setGreeting] = useState('');
 
+  // 更新时间
   useEffect(() => {
-    fetchStats();
+    const timer = setInterval(() => {
+      setTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
   }, []);
 
-  const fetchStats = async () => {
-    try {
-      const [users, roles] = await Promise.all([
-        getUsers(),
-        getRoles(),
-      ]);
+  // 更新欢迎词
+  useEffect(() => {
+    const updateGreeting = () => {
+      const hour = time.getHours();
+      if (hour >= 5 && hour < 12) {
+        setGreeting('早上好');
+      } else if (hour >= 12 && hour < 18) {
+        setGreeting('下午好');
+      } else {
+        setGreeting('晚上好');
+      }
+    };
 
-      setStats({
-        userCount: users.data?.length || 0,
-        roleCount: roles.length || 0,
-        loading: false,
-      });
-    } catch (error) {
-      console.error('获取统计数据失败:', error);
-      setStats(prev => ({ ...prev, loading: false }));
-    }
+    updateGreeting();
+  }, [time]);
+
+  // 计算指针角度
+  const getHandRotation = () => {
+    const hours = time.getHours();
+    const minutes = time.getMinutes();
+    const seconds = time.getSeconds();
+
+    // 时针：360度/12小时 = 30度/小时，每分钟额外转0.5度
+    const hourDegrees = ((hours % 12) * 30) + (minutes * 0.5);
+    // 分针：360度/60分钟 = 6度/分钟
+    const minuteDegrees = minutes * 6;
+    // 秒针：360度/60秒 = 6度/秒
+    const secondDegrees = seconds * 6;
+
+    return { hourDegrees, minuteDegrees, secondDegrees };
   };
 
-  if (stats.loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
-    );
-  }
+  const { hourDegrees, minuteDegrees, secondDegrees } = getHandRotation();
 
   return (
-    <Box>
-      <Typography variant="h4" sx={{ mb: 4 }}>
-        仪表盘
+    <Box
+      sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        pt: 4,
+      }}
+    >
+      <Typography
+        variant="h2"
+        sx={{
+          mb: 4,
+          background: 'linear-gradient(45deg, #FF9800 30%, #FFB74D 90%)',
+          backgroundClip: 'text',
+          textFillColor: 'transparent',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+        }}
+      >
+        {greeting}
       </Typography>
-      <Grid container spacing={3}>
-        <Grid item xs={12} sm={6}>
-          <Paper
+
+      <Box
+        sx={{
+          position: 'relative',
+          width: '300px',
+          height: '300px',
+          border: '10px solid #FF9800',
+          borderRadius: '50%',
+          background: 'white',
+          boxShadow: '0 3px 10px rgba(0,0,0,0.2), inset 0 0 10px rgba(0,0,0,0.1)',
+        }}
+      >
+        {/* 时钟刻度 */}
+        {[...Array(12)].map((_, i) => (
+          <Box
+            key={i}
             sx={{
-              p: 3,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              bgcolor: 'primary.light',
-              color: 'white',
+              position: 'absolute',
+              width: '2px',
+              height: '15px',
+              background: '#FF9800',
+              left: '149px',
+              transformOrigin: '1px 150px',
+              transform: `rotate(${i * 30}deg)`,
             }}
-          >
-            <Typography variant="h6">用户总数</Typography>
-            <Typography variant="h3">{stats.userCount}</Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <Paper
-            sx={{
-              p: 3,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              bgcolor: 'secondary.light',
-              color: 'white',
-            }}
-          >
-            <Typography variant="h6">角色总数</Typography>
-            <Typography variant="h3">{stats.roleCount}</Typography>
-          </Paper>
-        </Grid>
-      </Grid>
+          />
+        ))}
+
+        {/* 时针 */}
+        <Box
+          sx={{
+            position: 'absolute',
+            width: '6px',
+            height: '80px',
+            background: '#FF9800',
+            left: '147px',
+            top: '70px',
+            transformOrigin: '3px 80px',
+            transform: `rotate(${hourDegrees}deg)`,
+          }}
+        />
+
+        {/* 分针 */}
+        <Box
+          sx={{
+            position: 'absolute',
+            width: '4px',
+            height: '100px',
+            background: '#FF9800',
+            left: '148px',
+            top: '50px',
+            transformOrigin: '2px 100px',
+            transform: `rotate(${minuteDegrees}deg)`,
+          }}
+        />
+
+        {/* 秒针 */}
+        <Box
+          sx={{
+            position: 'absolute',
+            width: '2px',
+            height: '120px',
+            background: '#FFB74D',
+            left: '149px',
+            top: '30px',
+            transformOrigin: '1px 120px',
+            transform: `rotate(${secondDegrees}deg)`,
+          }}
+        />
+
+        {/* 中心点 */}
+        <Box
+          sx={{
+            position: 'absolute',
+            width: '12px',
+            height: '12px',
+            background: '#FF9800',
+            borderRadius: '50%',
+            left: '144px',
+            top: '144px',
+          }}
+        />
+      </Box>
     </Box>
   );
 };
